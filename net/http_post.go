@@ -24,7 +24,7 @@ func HttpPost(url string,payload []byte) ([]byte,error){
 	// Create request payload
 	//payload := []byte(`{"jsonRpc": {"method":"getBlockLimit","params":[]}}`)
 
-	fmt.Println("url:" + common.UrlQuery)
+	//fmt.Println("url:" + url)
 	// Create a new HTTP request
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payload))
 	if err != nil {

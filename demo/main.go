@@ -34,7 +34,8 @@ type TxRequest struct{
 	JsonRpc JsonRpc `json:"jsonRpc"`
 }
 
-func signAndSend(index int,txParam TxParam,wg sync.WaitGroup){
+func signAndSend(index int,txParam TxParam,wg *sync.WaitGroup){
+	defer wg.Done()
 	txCount := txParam.TotalTxCount/txParam.CocurrentCount
 	startId := txCount * index
 	for i := startId; i<(index+1)*txCount; i++{
@@ -74,7 +75,6 @@ func signAndSend(index int,txParam TxParam,wg sync.WaitGroup){
 			fmt.Println("sendTransaction error,code=",code)
 		}
 	}
-	wg.Done()
 }
 
 func requestBlockNumber()(int64,error){
@@ -141,13 +141,14 @@ func main() {
 	var wg sync.WaitGroup
 	for i := 0; i < txParam.CocurrentCount; i++ {
 		wg.Add(1)
-		go signAndSend(i,txParam,wg)
+		go signAndSend(i,txParam,&wg)
 	}
 	wg.Wait()
 
 	timeEnd := common.GetTimeMilli()
+	timeUsed := timeEnd-timeStart
 	tps := int64(txParam.TotalTxCount) * 1000/(timeEnd-timeStart)
-	fmt.Printf("Time used:%dms,total tx:%d,send tps:%d",(timeEnd-timeStart),txParam.TotalTxCount,tps)
+	fmt.Printf("Time used:%dms,total tx:%d,send tps:%d\n",timeUsed,txParam.TotalTxCount,tps)
 }
 
 
