@@ -6,7 +6,7 @@ const (
 	SoftGMAlg int = 2
 )
 
-const UrlBase string = "http://10.168.3.30:8080"
+const UrlBase string = "http://api.e-chain.net.cn:8310"
 const UrlQuery string = UrlBase + "/chain/rpc/query"
 const UrlTx string = UrlBase + "/chain/rpc/tx"
 

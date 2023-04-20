@@ -36,8 +36,11 @@ type TxRequest struct{
 
 func signAndSend(index int,txParam TxParam,wg *sync.WaitGroup){
 	defer wg.Done()
+	//每个线程发送交易数
 	txCount := txParam.TotalTxCount/txParam.CocurrentCount
+	//起始tokenId
 	startId := txCount * index
+
 	for i := startId; i<(index+1)*txCount; i++{
 		tokenId := strconv.Itoa(startId + i)
 		var blockLimit int64 = int64(txParam.BlockNumber + 900)
@@ -60,6 +63,7 @@ func signAndSend(index int,txParam TxParam,wg *sync.WaitGroup){
 
 		payload,err := json.Marshal(request)
 		//fmt.Println("Request payload:",string(payload))
+		fmt.Println("TxHash:",txHash)
 		resp,err := net.HttpPost(common.UrlTx,payload)
 		if err != nil{
 			fmt.Println("Http post failed:",err)
@@ -98,10 +102,11 @@ func requestBlockNumber()(int64,error){
 	return blockNumber,nil
 }
 
-//测试账户
+//测试账户，其它测试配置见 commmon/define.go
 //address:0x1d35a69766f36d958f8927aa137d1497d7321705
 //private:cc531db4906f0ee7441909274d47f72cff547b7383c3a862a34bcd15650fc08d
 
+//说明：需要提前部署一个合约，并把管理员权限转移给测试账户
 //参数1：用户私钥（合约管理员）
 //参数2：合约地址
 //参数3：并发数
