@@ -22,17 +22,7 @@ type TxParam struct{
 	ToAddress string
 }
 
-type AnyType interface {
-}
-type JsonRpc struct{
-	Method string 		`json:"method"`
-	Params []AnyType 	`json:"params"`
-}
 
-type TxRequest struct{
-	ReqNo 	string 	`json:"reqNo"`
-	JsonRpc JsonRpc `json:"jsonRpc"`
-}
 
 func signAndSend(index int,txParam TxParam,wg *sync.WaitGroup){
 	defer wg.Done()
@@ -54,14 +44,18 @@ func signAndSend(index int,txParam TxParam,wg *sync.WaitGroup){
 			fmt.Println("CreateSignedTransaction failed:",err)
 			continue
 		}
-		jsonRpc := JsonRpc{}
+		jsonRpc := common.JsonRpc{}
 		jsonRpc.Method = "sendTransaction"
-		jsonRpc.Params = []AnyType{txSigned,false}
-		request := TxRequest{}
+		jsonRpc.Params = []common.AnyType{txSigned,false}
+		request := common.TxRequest{}
 		request.ReqNo = txHash
 		request.JsonRpc = jsonRpc
 
 		payload,err := json.Marshal(request)
+		if err != nil{
+			fmt.Println("JsonMarshal request failed:",err)
+			continue
+		}
 		//fmt.Println("Request payload:",string(payload))
 		fmt.Println("TxHash:",txHash)
 		resp,err := net.HttpPost(common.UrlTx,payload)

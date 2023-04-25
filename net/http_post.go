@@ -2,6 +2,7 @@ package net
 
 import (
 	"bytes"
+	"crypto/tls"
 	"fmt"
 	"github.com/e-chain-net/echain-server-go-demo/common"
 	"io/ioutil"
@@ -37,14 +38,21 @@ func HttpPost(url string,payload []byte) ([]byte,error){
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36")
 	req.Header.Set("Connection", "Keep-Alive")
 	req.Header.Set("Content-Type", "application/json")
+
 	req.Header.Set("charset", "utf-8")
 	req.Header.Set("merchantNo",common.MerchantNo)
 	req.Header.Set("sign",signature)
 	req.Header.Set("timestamp",timeStamp)
 
+	// 创建不验证SSL证书的Transport,后面上了主网还是要开启验证的
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
 	// Send HTTP request
 	client := &http.Client{
 		Timeout: time.Second * 5,
+		Transport: transport,
 	}
 	resp, err := client.Do(req)
 	if err != nil {

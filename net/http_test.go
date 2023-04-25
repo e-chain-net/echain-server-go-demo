@@ -1,67 +1,101 @@
 package net
 
 import (
-	"bytes"
+	"encoding/json"
 	"fmt"
+	"github.com/buger/jsonparser"
 	"github.com/e-chain-net/echain-server-go-demo/common"
-	"io/ioutil"
-	"net/http"
 	"testing"
-	"time"
 )
 
 
-func TestHttp(t *testing.T) {
+func TestGetBlockNumber(t *testing.T) {
 	// Create request payload
-	payload := []byte(`{"jsonRpc": {"method":"getBlockLimit","params":[]}}`)
+	payload := []byte(`{"jsonRpc": {"method":"getBlockNumber","params":[]}}`)
 
 	responseBody,err := HttpPost(common.UrlQuery,payload)
 	if err != nil{
 		t.Error(err)
 	}
-	fmt.Println("Response Body:", string(responseBody))
+	code,err := jsonparser.GetString(responseBody,"code")
+	if err != nil{
+		t.Error(err)
+	}
+	if code != "EC000000" {
+		message,_ := jsonparser.GetString(responseBody,"message")
+		t.Errorf("sendTransaction error,msg=%s",message)
+	}
+	number,_ := jsonparser.GetInt(responseBody,"data","blockNumber")
+	fmt.Println("BlockNumber:", number)
 }
 
-func TestHttpBase(t *testing.T) {
-	// Create request payload
-	payload := []byte(`{"jsonRpc": {"method":"getBlockNumber","params":[]}}`)
+func TestTransactionReceipt(t *testing.T) {
+	txHash := "0x3ac02bbaca5e7e0adc05d0e36954c86ee39108d543542a49eed7420d445d2536"
+	jsonRpc := common.JsonRpc{}
+	jsonRpc.Method = "getTransactionReceipt"
+	jsonRpc.Params = []common.AnyType{txHash,false}
+	request := common.QueryRequest{}
+	request.JsonRpc = jsonRpc
 
-	fmt.Println("url:" + common.UrlQuery)
-	// Create a new HTTP request
-	req, err := http.NewRequest("POST", common.UrlQuery, bytes.NewBuffer(payload))
-	if err != nil {
-		fmt.Println("Error creating HTTP request:", err)
-		return
+	payload,err := json.Marshal(request)
+	if err != nil{
+		t.Error(err)
 	}
-
-	// Set content type header
-	req.Header.Set("Accept", "*/*")
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36")
-	req.Header.Set("Connection", "Keep-Alive")
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("charset", "utf-8")
-	req.Header.Set("merchantNo","1020000189025321")
-	req.Header.Set("sign","RgdvfNBvfkccRgnOC2y5Zcfyh5myAYZnTGS6mhBCv0t0rIQfhLBqLVge7S931/1QavD9X0G4E0wTB1Dl2iMcWGZABC+HrtgZtndigUwNaIJhxkX+drkxPeFZROjwk02xvfx3deMvAHqMYx3EZVmTB6x3Og/7Z7HEKt3mGWNuDh/usS+SV8CG+iRrFDSlnCTJc4N6/6B+bFT2O2U5a0wCwgaIg5q3mrNgSMQ7W3WxGue8/DxonYNUUupqQltwUH56SX6WKj0sy87ahAJe1fdIuNH/DN9R/guOqqLYARMYyC5bStqj+lfKm9EkIUahOoy3QWG5jVNG7g6wqxbSYXjHSg==")
-	req.Header.Set("timestamp","1681178471210")
-
-	// Send HTTP request
-	client := &http.Client{
-		Timeout: time.Second * 5,
+	responseBody,err := HttpPost(common.UrlQuery,payload)
+	if err != nil{
+		t.Error(err)
 	}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println("Error sending HTTP request:", err)
-		return
+	code,err := jsonparser.GetString(responseBody,"code")
+	if err != nil{
+		t.Error(err)
 	}
-
-	defer resp.Body.Close()
-
-	// Print HTTP response status code and body
-	fmt.Println("Response Status:", resp.Status)
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Println("Error reading HTTP response body:", err)
-		return
+	if code != "EC000000" {
+		message,_ := jsonparser.GetString(responseBody,"message")
+		t.Errorf("sendTransaction error,msg=%s",message)
 	}
-	fmt.Println("Response Body:", string(body))
+	txReceipt,_,_,err := jsonparser.Get(responseBody,"data")
+	if err != nil{
+		t.Error(err)
+	}
+	fmt.Println("TransactionReceipt:",string(txReceipt))
 }
+
+func TestTokenOwner(t *testing.T){
+	contractAddress := "0xc0f2254a5e506d6cda5e5ccd98ced32bd0e81609";
+	ownerOfData,err := common.EncodeOwnerOf("1000")
+	if err != nil {
+		t.Error(err)
+	}
+
+	jsonRpc := common.JsonRpc{}
+	jsonRpc.Method = "call"
+	jsonRpc.Params = []common.AnyType{contractAddress,ownerOfData}
+	request := common.QueryRequest{}
+	request.JsonRpc = jsonRpc
+
+	payload,err := json.Marshal(request)
+	if err != nil{
+		t.Error(err)
+	}
+
+	responseBody,err := HttpPost(common.UrlQuery,payload)
+	if err != nil{
+		t.Error(err)
+	}
+	code,err := jsonparser.GetString(responseBody,"code")
+	if err != nil{
+		t.Error(err)
+	}
+	if code != "EC000000" {
+		message,_ := jsonparser.GetString(responseBody,"message")
+		t.Errorf("sendTransaction error,msg=%s",message)
+	}
+
+	output,err := jsonparser.GetString(responseBody,"result","output")
+	if err != nil{
+		t.Error(err)
+	}
+	fmt.Println("OwnerOf output:",output)
+}
+
+
