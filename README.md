@@ -1,6 +1,3 @@
-# echain-server API文档
-https://yeepay.feishu.cn/docx/TtKTdqKQZo4nvMxPgGNcgh4ung3
-
 # echain-server-go-demo
 
 - 压测发送标准ERC721铸造：``demo/main.go``
