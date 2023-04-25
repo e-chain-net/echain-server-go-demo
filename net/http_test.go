@@ -91,7 +91,12 @@ func TestTokenOwner(t *testing.T){
 		t.Errorf("sendTransaction error,msg=%s",message)
 	}
 
-	output,err := jsonparser.GetString(responseBody,"result","output")
+	status,err := jsonparser.GetInt(responseBody,"data","jsonRpcResp","result","status")
+	if err != nil{
+		t.Error(err)
+	}
+	fmt.Println("OwnerOf status:",status)
+	output,err := jsonparser.GetString(responseBody,"data","jsonRpcResp","result","output")
 	if err != nil{
 		t.Error(err)
 	}
