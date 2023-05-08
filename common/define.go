@@ -2,7 +2,7 @@ package common
 
 
 //测试证书
-const UrlBase string = "https://qa-api.e-chain.net.cn"
+const UrlBase string = "https://perf-api.e-chain.net.cn"
 const UrlQuery string = UrlBase + "/chain/rpc/query"
 const UrlTx string = UrlBase + "/chain/rpc/tx"
 const UrlDeploy string = UrlBase + "/chain/contract/deploy"

@@ -3,6 +3,7 @@ package net
 import (
 	"bytes"
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"github.com/e-chain-net/echain-server-go-demo/common"
 	"io/ioutil"
@@ -44,9 +45,24 @@ func HttpPost(url string,payload []byte) ([]byte,error){
 	req.Header.Set("sign",signature)
 	req.Header.Set("timestamp",timeStamp)
 
+	// Load server certificate
+	certPool := x509.NewCertPool()
+	pemData, err := ioutil.ReadFile("D:/yeepay/e-chain.net.cn_server.crt")
+	if err != nil {
+		return nil,err
+	}
+	ok := certPool.AppendCertsFromPEM(pemData)
+	if !ok {
+		return nil,err
+	}
+	// Create a TLS configuration
+	tlsConfig := &tls.Config{
+		RootCAs: certPool,
+	}
 	// 创建不验证SSL证书的Transport,后面上了主网还是要开启验证的
 	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		//TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig: tlsConfig,
 	}
 
 	// Send HTTP request
