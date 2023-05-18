@@ -47,7 +47,7 @@ func HttpPost(url string,payload []byte) ([]byte,error){
 
 	// Load server certificate
 	certPool := x509.NewCertPool()
-	pemData, err := ioutil.ReadFile("D:/yeepay/e-chain.net.cn_server.crt")
+	pemData, err := ioutil.ReadFile(common.CertPath)
 	if err != nil {
 		return nil,err
 	}

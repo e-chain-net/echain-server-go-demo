@@ -26,44 +26,6 @@ func checkAbi(){
 		erc721Abi = abi
 	})
 }
-func EncodeMint(to string,tokenId string) (string,error){
-	checkAbi()
-	toAddress := common.HexToAddress(to)
-	tokenBig := new(big.Int)
-	tokenBig.SetString(tokenId,0)
-
-	data, err := erc721Abi.Pack("mint", toAddress,tokenBig)
-	if err != nil {
-		return "",err
-	}
-	return hexutil.Encode(data),nil
-}
-
-func EncodeTransferFrom(from string,to string,tokenId string)(string,error){
-	checkAbi()
-	fromAddress := common.HexToAddress(from)
-	toAddress := common.HexToAddress(to)
-	tokenBig := new(big.Int)
-	tokenBig.SetString(tokenId,0)
-
-	data, err := erc721Abi.Pack("transferFrom", fromAddress,toAddress,tokenBig)
-	if err != nil {
-		return "",err
-	}
-	return hexutil.Encode(data),nil
-}
-
-func EncodeBurn(tokenId string) (string,error){
-	checkAbi()
-	tokenBig := new(big.Int)
-	tokenBig.SetString(tokenId,0)
-
-	data, err := erc721Abi.Pack("burn", tokenBig)
-	if err != nil {
-		return "",err
-	}
-	return hexutil.Encode(data),nil
-}
 
 func EncodeOwnerOf(tokenId string)(string,error){
 	checkAbi()
@@ -71,6 +33,16 @@ func EncodeOwnerOf(tokenId string)(string,error){
 	tokenBig.SetString(tokenId,0)
 
 	data, err := erc721Abi.Pack("ownerOf", tokenBig)
+	if err != nil {
+		return "",err
+	}
+	return hexutil.Encode(data),nil
+}
+
+func EncodeBalanceOf(owner string)(string,error){
+	checkAbi()
+	ownerAddress := common.HexToAddress(owner)
+	data,err := erc721Abi.Pack("balanceOf",ownerAddress)
 	if err != nil {
 		return "",err
 	}

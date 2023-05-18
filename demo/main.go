@@ -1,11 +1,8 @@
 package main
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
-	"github.com/buger/jsonparser"
-	"github.com/dinghongchao/bcos-go-sdk/sdk"
+	"github.com/e-chain-net/echain-go-sdk-721/sdk"
 	"github.com/e-chain-net/echain-server-go-demo/common"
 	"github.com/e-chain-net/echain-server-go-demo/net"
 	"os"
@@ -33,63 +30,21 @@ func signAndSend(index int,txParam TxParam,wg *sync.WaitGroup){
 
 	for i := startId; i<(index+1)*txCount; i++{
 		tokenId := strconv.Itoa(startId + i)
-		var blockLimit int64 = int64(txParam.BlockNumber + 900)
-		input,err := common.EncodeMint(txParam.ToAddress,tokenId)
-		if err != nil{
-			fmt.Println("encode mint error:",err)
-			continue
-		}
-		txHash,txSigned,err := sdk.CreateSignedTransaction(txParam.PrivateKey,"group0","chain0",txParam.ContractAddress,input,"",blockLimit)
+		txHash,txSigned,err := sdk.SignMint(txParam.ToAddress,tokenId,txParam.ContractAddress,txParam.PrivateKey,txParam.BlockNumber)
 		if err != nil{
 			fmt.Println("CreateSignedTransaction failed:",err)
 			continue
 		}
-		jsonRpc := common.JsonRpc{}
-		jsonRpc.Method = "sendTransaction"
-		jsonRpc.Params = []common.AnyType{txSigned,false}
-		request := common.TxRequest{}
-		request.ReqNo = txHash
-		request.JsonRpc = jsonRpc
-
-		payload,err := json.Marshal(request)
+		err = net.SendTx(common.UrlTx,txHash,txSigned)
 		if err != nil{
-			fmt.Println("JsonMarshal request failed:",err)
+			fmt.Println(err.Error())
 			continue
-		}
-		//fmt.Println("Request payload:",string(payload))
-		fmt.Println("TxHash:",txHash)
-		resp,err := net.HttpPost(common.UrlTx,payload)
-		if err != nil{
-			fmt.Println("Http post failed:",err)
-			continue
-		}
-
-		code,err := jsonparser.GetString(resp,"code")
-		if err != nil{
-			fmt.Println("jsonParser error:",err)
-			continue
-		}
-		if code != "EC000001" {
-			fmt.Println("sendTransaction error,code=",code)
 		}
 	}
 }
 
 func requestBlockNumber()(int64,error){
-	payload := []byte(`{"jsonRpc": {"method":"getBlockNumber","params":[]}}`)
-	resp,err := net.HttpPost(common.UrlQuery,payload)
-	if err != nil{
-		return 0,err
-	}
-	//fmt.Println(string(resp))
-	code,err := jsonparser.GetString(resp,"code")
-	if err != nil{
-		return 0,err
-	}
-	if code != "EC000000"{
-		return 0,errors.New(string(resp))
-	}
-	blockNumber,err := jsonparser.GetInt(resp,"data","blockNumber")
+	blockNumber,err := net.GetBlockNumber(common.UrlQuery)
 	if err != nil{
 		return 0,err
 	}
