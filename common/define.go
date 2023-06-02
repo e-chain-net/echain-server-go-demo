@@ -26,6 +26,7 @@ type JsonRpc struct{
 type TxRequest struct{
 	ReqNo 	string 	`json:"reqNo"`
 	JsonRpc JsonRpc `json:"jsonRpc"`
+	CallbackUrl string `json:"callbackUrl"`
 }
 
 type QueryRequest struct{

@@ -150,13 +150,14 @@ func GetBalanceOf(url string,contractAddress string,owner string)(int64,error){
 	return balanceBig.Int64(),nil
 }
 
-func SendTx(url string,txHash string,txSigned string) error{
+func SendTx(url string,txHash string,txSigned string,callbackUrl string) error{
 	jsonRpc := common.JsonRpc{}
 	jsonRpc.Method = "sendTransaction"
 	jsonRpc.Params = []common.AnyType{txSigned,false}
 	request := common.TxRequest{}
 	request.ReqNo = txHash
 	request.JsonRpc = jsonRpc
+	request.CallbackUrl = callbackUrl
 
 	payload,err := json.Marshal(request)
 	if err != nil{

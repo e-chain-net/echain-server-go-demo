@@ -35,7 +35,7 @@ func signAndSend(index int,txParam TxParam,wg *sync.WaitGroup){
 			fmt.Println("CreateSignedTransaction failed:",err)
 			continue
 		}
-		err = net.SendTx(common.UrlTx,txHash,txSigned)
+		err = net.SendTx(common.UrlTx,txHash,txSigned,"")
 		if err != nil{
 			fmt.Println(err.Error())
 			continue

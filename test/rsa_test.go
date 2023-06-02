@@ -68,7 +68,3 @@ func TestRsaLoadAndSign(t *testing.T) {
 	fmt.Println("Signature:" + encoded)
 	fmt.Println("Signature verified")
 }
-
-func TestIntMinBasic(t *testing.T) {
-	t.Errorf("IntMin(2, -2) = %d; want -2", 123)
-}
